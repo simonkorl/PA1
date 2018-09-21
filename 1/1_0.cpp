@@ -2,17 +2,19 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+
 using namespace std;
+
 struct Large{
   Large(){
     num = new int[5000];
-    memset(num, 0, 5000 * sizeof(int));
     len = 0;
+    s = 0;
   }
   Large(int l){
     num = new int[l];
-    memset(num, 0, l * sizeof(int));
     len = l;
+    s = 0;
   }
   ~Large(){
     delete[] num;
@@ -26,8 +28,13 @@ struct Large{
   int operator [] (unsigned int i){
     return num[i];
   }
+  void Clear(){
+    len = 0;
+    s = 0;
+  }
   int* num; //每一位
   int len; //位数
+  int s; //储存的位置
 };
 // Large Mult(int astart,int aend,int bstart,int bend){
 
@@ -45,29 +52,26 @@ int main(){
   Large a, b;
 
   for (int i = 0; i < n; ++i){
-    a.len = 0;
-    b.len = 0;
+    a.Clear();
+    b.Clear();
+
     //input
-    char *in;
+    char* in;
     in = new char[10002];
     scanf("%s", in);
 
     int length = strlen(in);
     int j = 0;
-    for (; j < length; ++j){
-      if(in[j] != ' '){
-        a.num[j] = in[j] - '0';
-        a.len++;
-      }
-      else 
-        break;
+    
+    for (; j < length && in[j] != ' '; ++j){
+      a.num[a.len++] = in[j] - '0';
     }
-    for (j = j + 1; j < length; ++j){
-      if(in[j] != '\n'){
-        b.num[j] = in[j] - '0';
-        b.len++;
-      }
+
+    for (int k = j + 1; k < length; k++){
+      b.num[b.len++] = in[k] - '0';
     }
+
+    
     //multiply
     if ((a.len == 1 && a.num[0] == 0) || (b.len == 1 && b.num[0] == 0)){
       printf("0\n");
@@ -76,15 +80,22 @@ int main(){
     }
 
     else{
-      Large c(a.len + b.len);
-      for (int k = 0; k < b.len; k++){
-        for (int q = 0; q < a.len; q++){
-          c.num[k + q] = b[b.len - k - 1] * a[a.len - q - 1];
-        }
+      // Large c(a.len + b.len);
+      // for (int k = 0; k < b.len; k++){
+      //   for (int q = 0; q < a.len; q++){
+      //     c.num[k + q] = b[b.len - k - 1] * a[a.len - q - 1];
+      //   }
+      // }
+      //   
+      //output
+      for (int k = 0; k < a.len; k++){
+        printf("%d", a[k]);
       }
-        //output
-
-        printf("\n");
+      printf(" ");
+      for (int k = 0; k < b.len; k++){
+        printf("%d", b[k]);
+      }
+      printf("\n");
       delete in;
     }
   }

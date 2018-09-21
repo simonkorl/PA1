@@ -1,11 +1,11 @@
 {
   "version": "2.0.0",
-  "command": "g++",
+  "command": "make",//g++
   "args": [
-    "-g",
-    "${file}",
-    "-o",
-    "${file}.exe"
+    // "-g",
+    // "${file}",
+    // "-o",
+    // "${file}.exe"
   ],
   "problemMatcher": {
     "owner": "cpp",
