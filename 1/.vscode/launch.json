@@ -8,7 +8,7 @@
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/test.exe", // 将要进行调试的程序的路径
+      "program": "${workspaceFolder}\\test.exe", // 将要进行调试的程序的路径
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -16,7 +16,7 @@
       "externalConsole": true,
       "MIMode": "gdb",
       "miDebuggerPath": "C:\\MinGW\\bin\\gdb.exe",
-      "preLaunchTask": "make", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+      "preLaunchTask": "g++", // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
