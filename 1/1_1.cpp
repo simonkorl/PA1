@@ -112,7 +112,7 @@ int main(){
       Large c(a.len + b.len + 1);
       for (int k = 0; k < b.len; k++){
         for (int q = 0; q < a.len; q++){
-          c.num[k + q] += b.num[k] * a.num[k];
+          c.num[k + q] += b.num[k] * a.num[q];
         }
         c.len = Max(a.len + k, c.len);
         jinwei(c);

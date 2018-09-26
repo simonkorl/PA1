@@ -16,8 +16,8 @@ struct Large{
   }
   Large(int l){
     if (l != 0) {
-      num = new int[l];
-      memset(num, 0, sizeof(int) * l);
+      num = new int[l]();
+      //memset(num, 0, sizeof(int) * l);
       len = 0;
       sign = false;
     }
@@ -51,6 +51,7 @@ struct Large{
   }
   Large(long long lln) {
     num = new int[16];
+    memset(num, 0, sizeof(int) * 16);
     if (lln > 0)
       sign = false;
     else {
@@ -59,8 +60,8 @@ struct Large{
     }
     len = 0;
     while (lln > 0) {
-      num[len++] = lln % 10000;
-      lln /= 10000;
+      num[len++] = lln % MODNUM;
+      lln /= MODNUM;
     }
   }
   Large& operator = (const Large& copy) {
@@ -93,46 +94,75 @@ struct Large{
 
   Large operator * (const Large& b) {
     if (len == 1 && num[0] == 0 || b.len == 1 && b.num[0] == 0)
-      return Large(0);
+      return ZERO;
     else if (len <= 2 && b.len <= 2)
     {
       long long la = toLongLong();
       long long lb = b.toLongLong();
-      return Large(long long(la*lb));
+      return Large(la*lb);
+    }
+    else if (len == 1) {
+      Large r(b.len + 1);
+      if (sign ^ b.sign)
+        r.sign = true;
+      else
+        r.sign = false;
+      for (int i = 0; i < b.len; ++i) {
+        r.num[r.len++] = num[0] * b.num[i];
+      }
+      adjust(r);
+      return r;
+    }
+    else if (b.len == 1) {
+      Large r(len + 1);
+      if (sign ^ b.sign)
+        r.sign = true;
+      else
+        r.sign = false;
+      for (int i = 0; i < len; ++i) {
+        r.num[r.len++] = b.num[0] * num[i];
+      }
+      adjust(r);
+      return r;
     }
     else {
+
       Large *A, *B, *C, *D;
 
-      int amid = len / 2;
-      B = new Large(amid + 1, amid + 1);
-      B->Copy(*this, 0, amid - 1);
-      adjust(*B);
+      int amid = (len) / 2;
+      int bmid = (b.len) / 2;
+      int mid = Min(amid, bmid);
 
-      A = new Large(amid + 1, amid + 1);
-      A->Copy(*this, amid, len - 1);
-      adjust(*A);
+      B = new Large(mid + 1);
+      B->Copy(*this, 0, mid - 1);
+      //adjust(*B);
 
-      int bmid = b.len / 2;
-      D = new Large(bmid + 1, bmid + 1);
-      D->Copy(b, 0, bmid - 1);
-      adjust(*D);
+      A = new Large(len - mid + 1);
+      A->Copy(*this, mid, len - 1);
+      //adjust(*A);
+      
+      D = new Large(mid + 1);
+      D->Copy(b, 0, mid - 1);
+      //adjust(*D);
 
-      C = new Large(bmid + 1, bmid + 1);
-      C->Copy(b, bmid, b.len - 1);
-      adjust(*C);
+      C = new Large(b.len - mid + 1);
+      C->Copy(b, mid, b.len - 1);
+      //adjust(*C);
 
       Large AC = *A * *C;
       Large BD = *B * *D;
-      Large ZA = A->addZeroes(amid);
-      Large ZC = C->addZeroes(bmid);
-      Large com = (ZA - *B) * (*D - ZC);            
+      Large com = (*A + *B) * (*C + *D) - AC - BD;            
       delete A;
       delete B;
       delete C;
       delete D;
 
-      Large r(AC.len + amid + bmid + 1);
-      r = (AC + AC).addZeroes(amid + bmid) + com + BD + BD;
+      Large r(AC.len + 2 * mid + 1);
+      if (sign ^ b.sign)
+        r.sign = true;
+      else
+        r.sign = false;
+      r = AC.addZeroes(2 * mid) + com.addZeroes(mid) + BD;
       adjust(r);
       return r;
     }
@@ -144,7 +174,7 @@ struct Large{
     {
       long long la = toLongLong();
       long long lb = b.toLongLong();
-      return Large(long long(la + lb));
+      return Large(la + lb);
     }
     else if (!(a->sign ^ b.sign)) {
       r.sign = a->sign;
@@ -184,7 +214,7 @@ struct Large{
     {
       long long la = toLongLong();
       long long lb = b.toLongLong();
-      return Large(long long(la*lb));
+      return Large(la-lb);
     }
     else if (!(a->sign ^ b.sign)) {
       if (a->absLargerThan(b) > 0) {
@@ -219,17 +249,17 @@ struct Large{
 
   static void adjust(Large& obj) {
     for (int i = 0; i < obj.len; ++i) {
-      if (abs(obj.num[i]) >= 10000) {
+      if (abs(obj.num[i]) >= MODNUM) {
         if (i == obj.len - 1) {
           obj.len += 1;
         }
-        obj.num[i + 1] += obj.num[i] / 10000;
-        obj.num[i] = abs(obj.num[i] % 10000);
+        obj.num[i + 1] += obj.num[i] / MODNUM;
+        obj.num[i] = abs(obj.num[i] % MODNUM);
       }
       else if (obj.num[i] < 0 && i != obj.len - 1){
-        int tui = -(obj.num[i] / 10000) + 1;
+        int tui = -(obj.num[i] / MODNUM) + 1;
         obj.num[i + 1] -= tui;
-        obj.num[i] += tui * 10000;
+        obj.num[i] += tui * MODNUM;
       }
     }
     while (obj.num[obj.len - 1] == 0)obj.len--;
@@ -246,16 +276,19 @@ struct Large{
     for (int i = len - 1; i >= 0; i--) {
       a += num[i];
       if (i > 0)
-        a *= 10000;
+        a *= MODNUM;
     }
     if (sign)
       a *= -1;
     return a;
   }
   void Copy(const Large& copy, int start, int end) {
-    if (end < start || start >= copy.len || end >= copy.len|| start < 0)
+    if (end < start || start >= copy.len || end >= copy.len || start < 0) {
+      *this = ZERO;
       return;
+    }  
     else {
+      sign = copy.sign;
       len = end - start + 1;
       for (int i = 0; i < len; ++i) {
         num[i] = copy[start + i];
@@ -282,6 +315,7 @@ struct Large{
   Large addZeroes(int number) {
     if (number > 0) {
       Large r(number + len, number + len);
+      r.sign = sign;
       for (int i = number; i < len + number; ++i) {
         r.num[i] = num[i - number];
       }
@@ -324,8 +358,8 @@ int main(){
 
     //input
     char *ina, *inb;
-    ina = new char[5000];
-    inb = new char[5000];
+    ina = new char[MAXDIGIT + 1];
+    inb = new char[MAXDIGIT + 1];
     scanf("%s %s\n", ina,inb);
     
     int la = strlen(ina);
@@ -356,6 +390,8 @@ int main(){
     //multiply
     if ((a.len == 1 && a.num[0] == 0) || (b.len == 1 && b.num[0] == 0)){
       printf("0\n");
+      delete ina;
+      delete inb;
       continue;
     }
 
@@ -380,9 +416,11 @@ int main(){
             else
               printf("%d", c.num[k]);
           }          
-        
+          //printf(" "); //test only
       }
       printf("\n");
+      delete ina;
+      delete inb;
     }
   }
       
