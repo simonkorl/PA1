@@ -1,6 +1,7 @@
 {
   "files.associations": {
     "cstdio": "cpp",
-    "xlocale": "cpp"
+    "xlocale": "cpp",
+    "cstring": "cpp"
   }
 }
